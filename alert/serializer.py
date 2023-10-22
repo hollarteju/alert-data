@@ -24,7 +24,18 @@ class ProfilePictureSerializer(serializers.Serializer):
     # image = serializers.ImageField()
     class Meta:
         model=ProfilePicture
-        fields = ("user", "image")
+        fields = "__all__"
+
+            
+class TimeLineSerializer(serializers.Serializer):
+    class Meta:
+        model=Timeline
+        fields = "__all__"
+
+class ReactionSerializer(serializers.Serializer):
+    class Meta:
+        model=Reaction
+        fields = "__all__"
 
     # def create(self, validated_data):
     #     user = self.context["request"].data["user"]

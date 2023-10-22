@@ -33,10 +33,10 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 
     path("register", register_user ),
-    # path("logout", logout_users ),
     path("profile_image_response", profile_image_response),
-    path("save_images", image_view),
-    # path("image", ImageView.as_view(), name="create image"),
+    path("timeline_update", timeline_update),
+    path("reaction_update", reaction_update),
+    path("timeline_res", timeline_response),
     # simple jwt token url
     path('token', MyToken.as_view(), name='token_obtain_pair'),  # Generate token
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),  # Refresh token

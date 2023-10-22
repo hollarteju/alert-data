@@ -2,8 +2,7 @@ from typing import Any
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser,PermissionsMixin
 from django.contrib.auth.base_user import  BaseUserManager
-import re
-
+from django.utils import timezone
 
 
 
@@ -75,19 +74,20 @@ class ProfilePicture(models.Model):
     def __str__(self):
         return self.user.username
     
-# class Timeline(models.Model):
-#     user = models.ManyToManyField(UserData, on_delete= models.CASCADE, related_name= "time_line")
-#     time_line_messages = models.TextField(max_length=1000, blank=True)
-#     time_line_medias= models.FileField(upload_to="images", blank=True)
-#     witnesses = models.IntegerField(max_length=20, blank=True)
-#     confirm = models.IntegerField(max_length=20, blank=True)
-#     reject = models.IntegerField(max_length=20, blank=True)
-#     message = models.IntegerField(max_length=20, blank=True)
-#     date = models.TimeField(auto_now=True, blank=True)
+class Timeline(models.Model):
+    user = models.ForeignKey(UserData, on_delete= models.CASCADE, related_name= "time_line")
+    timeline_message = models.TextField(max_length=1000000, blank=True)
+    timeline_media= models.FileField(upload_to="timeline", blank=True, null=True)
+    created_at = models.DateTimeField(default=timezone.now)
 
-#     def __str__(self):
-#         return self.user.username
+  
     
+class Reaction(models.Model):
+    REACTION_CHOICES= [("Like","like"), ("Dislike","dislike"),("Witness","witness")]
+
+    user = models.ForeignKey(Timeline, on_delete=models.CASCADE, related_name="reations")
+    username = models.ForeignKey(UserData, on_delete=models.CASCADE)
+    reaction = models.CharField(max_length=7, choices=REACTION_CHOICES)
 
 
 

@@ -1,16 +1,16 @@
 
-from django.shortcuts import render
+from django.shortcuts import render, get_list_or_404
 from rest_framework  import viewsets, status
 from . models import *
 from . serializer import *
 from django.http import JsonResponse
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from django.contrib.auth import login, logout
+# from django.contrib.auth import login, logout
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.generics import ListCreateAPIView
-from urllib.parse import unquote
+# from urllib.parse import unquote
 
 class MyTokenObtain(TokenObtainPairSerializer):
     @classmethod
@@ -41,34 +41,6 @@ def register_user(request):
         return Response(request.data)
    
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-# # @api_view(["POST"])
-# # def login_page(request):
-# #     data = request.data
-    
-# #     serializer = UserDataLoginSerializer(data=data)
-# #     if serializer.is_valid():
-        
-# #         user= UserDataLoginSerializer.authenticating(data)
-# #         login(request, user)
-
-# #         user_datas = request.user
-# #         user_data = {
-# #             "username": user_datas.username,
-# #             "phone_number": user_datas.phone_number,
-# #             "state": user_datas.state,
-# #             "city": user_datas.city,
-# #             "district":user_datas.district
-# #             }
-# #         return Response(user_data)
-        
-  
-# #     return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-# @api_view(["POST"])
-# def logout_users(request):
-#     logout(request)
-#     return Response(status=status.HTTP_200_OK)
 
 
 @api_view(["POST"])
@@ -105,14 +77,51 @@ def profile_image_response(request):
                 profile_image = ProfilePicture.objects.get(user=user)
                 user_profile_image = {"image":profile_image.image.name,
                                       "avatar":profile_image.avatar.name}
-                return JsonResponse(user_profile_image)
+                return Response(user_profile_image)
             except ProfilePicture.DoesNotExist:
-                return Response(status=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
+                return Response(status=status.HTTP_200_OK)
                 
                 
   
         return Response(status= status.HTTP_401_UNAUTHORIZED)
-# class ImageView(ListCreateAPIView):
-#     queryset = ImageData.objects.all()
-#     serializer_class=ImageSerializer()
+
+@api_view(["POST"])
+def timeline_update(request):
+    data = request.data
+    serializer= TimeLineSerializer(data=data)
+    if serializer.is_valid():
+        try:
+            user = UserData.objects.get(username = data["username"])
+            user_timeline = Timeline.objects.create(user = user, timeline_message = data["timeline_message"],
+                                                     timeline_media= data["timeline_media"])
+            user_timeline.save()
+          
+            return Response(status=status.HTTP_200_OK)
+        except UserData.DoesNotExist:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(["POST"])
+def timeline_response(request):
+    data_value = UserData.objects.all()
+
+    for i in data_value:
+        try:
+            user_pf_img = ProfilePicture.objects.get(user= i)
+            user_timeline = [{"user_id":a.id,"user":i.username,"message":a.timeline_message, "media":a.timeline_media.name, "user_img":user_pf_img.image.name}
+                if a.timeline_media else {"user":i.username,"message":a.timeline_message,"user_id":a.id, "user_img":user_pf_img.image.name} 
+                for a in Timeline.objects.filter(user=i)]
+        except ProfilePicture.DoesNotExist:
+            user_timeline = [{"user_id":a.id,"user":i.username,"message":a.timeline_message, "media":a.timeline_media.name}
+                if a.timeline_media else {"user":i.username,"message":a.timeline_message,"user_id":a.id} 
+                for a in Timeline.objects.filter(user=i)]
+        
+    return Response(user_timeline)
+
+@api_view(["POST"])
+def reaction_update(request):
+    data = request.data
+    serializer= ReactionSerializer(data=data)
+
+    
 
