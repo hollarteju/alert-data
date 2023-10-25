@@ -103,25 +103,36 @@ def timeline_update(request):
 
 @api_view(["POST"])
 def timeline_response(request):
-    data_value = UserData.objects.all()
-
-    for i in data_value:
-        try:
-            user_pf_img = ProfilePicture.objects.get(user= i)
-            user_timeline = [{"user_id":a.id,"user":i.username,"message":a.timeline_message, "media":a.timeline_media.name, "user_img":user_pf_img.image.name}
-                if a.timeline_media else {"user":i.username,"message":a.timeline_message,"user_id":a.id, "user_img":user_pf_img.image.name} 
-                for a in Timeline.objects.filter(user=i)]
-        except ProfilePicture.DoesNotExist:
-            user_timeline = [{"user_id":a.id,"user":i.username,"message":a.timeline_message, "media":a.timeline_media.name}
-                if a.timeline_media else {"user":i.username,"message":a.timeline_message,"user_id":a.id} 
-                for a in Timeline.objects.filter(user=i)]
-        
-    return Response(user_timeline)
+    data_value = Timeline.objects.all()
+    
+        # user_pics = ProfilePicture.objects.get(user="olateju")
+    data = [{"user":i.user.username, "message":i.timeline_message, "media":i.timeline_media.name, "user_id":i.id, "user_timeline":i.id}
+                 if i.timeline_media else {"user":i.user.username, "message":i.timeline_message, "user_id":i.id,"user_timeline":i.id} for i in data_value]
+        # except ProfilePicture.DoesNotExist:
+        #     user_timeline = [{"user_id":a.id,"user":i.username,"message":a.timeline_message, "media":a.timeline_media.name}
+        #         if a.timeline_media else {"user":i.username,"message":a.timeline_message,"user_id":a.id} 
+        #         for a in Timeline.objects.filter(user=i)]
+    a = Reaction.objects.all()
+    b = [i  for i in a]
+    print(b)
+    return Response(data)
 
 @api_view(["POST"])
 def reaction_update(request):
     data = request.data
     serializer= ReactionSerializer(data=data)
+    if serializer.is_valid():
+        
+        users = UserData.objects.get(username = data["username"])
+        user_timeline = Timeline.objects.get(id = data["id"])
+        print(Reaction.objects.filter(user = user_timeline, username = users, reaction= data["reaction"]).exists()) 
+        reaction_data = Reaction.objects.create(user = user_timeline, username = users, reaction= data["reaction"])
+        reaction_data.save()
+        
+        return Response(status=status.HTTP_200_OK)
 
-    
+    return Response(status=status.HTTP_403_FORBIDDEN)
+# username: hollarteju1
+# password hollarteju
+
 

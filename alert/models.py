@@ -79,15 +79,15 @@ class Timeline(models.Model):
     timeline_message = models.TextField(max_length=1000000, blank=True)
     timeline_media= models.FileField(upload_to="timeline", blank=True, null=True)
     created_at = models.DateTimeField(default=timezone.now)
-
+    def __str__(self):
+        return str(self.id)
   
     
 class Reaction(models.Model):
-    REACTION_CHOICES= [("Like","like"), ("Dislike","dislike"),("Witness","witness")]
 
     user = models.ForeignKey(Timeline, on_delete=models.CASCADE, related_name="reations")
     username = models.ForeignKey(UserData, on_delete=models.CASCADE)
-    reaction = models.CharField(max_length=7, choices=REACTION_CHOICES)
+    reaction = models.CharField(max_length=10)
 
 
 
