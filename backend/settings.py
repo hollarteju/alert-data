@@ -29,7 +29,9 @@ SECRET_KEY = 'django-insecure-8fw%etty7@t5f4=1@5dwqdpbv!%i5!kx%@gwq3upq$ew+_+5h4
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["hollarteju1.pythonanywhere.com"]
+
+                 
 
 
 # Application definition
@@ -46,10 +48,12 @@ INSTALLED_APPS = [
     "corsheaders",
 ]
 
-CORS_ALLOW_ORIGIN =[
-    "http://localhost:3000",
-    "http://127.0.0.1:3000"
-]
+# CORS_ALLOW_ORIGIN =[
+#     "http://localhost:3000",
+#     "http://127.0.0.1:3000"
+# ]
+
+CORS_ALLOW_ALL_ORIGINS = True
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -59,6 +63,7 @@ REST_FRAMEWORK = {
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -107,23 +112,23 @@ AUTH_USER_MODEL = "alert.UserData"
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-#         'NAME': 'zwzrokfn',    # Replace with your database name
-#         'USER': 'zwzrokfn',  # Replace with your PostgreSQL username
-#         'PASSWORD': '2gLMvVH5_17h8n68d2kTOxxXPrhb6dCs',  # Replace with your PostgreSQL password
-#         'HOST': 'trumpet.db.elephantsql.com',  # Set to the PostgreSQL server hostname
-#         'PORT': '5432',       # Set to the PostgreSQL server port
-#     }
-# }
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'zwzrokfn',    # Replace with your database name
+        'USER': 'zwzrokfn',  # Replace with your PostgreSQL username
+        'PASSWORD': '2gLMvVH5_17h8n68d2kTOxxXPrhb6dCs',  # Replace with your PostgreSQL password
+        'HOST': 'trumpet.db.elephantsql.com',  # Set to the PostgreSQL server hostname
+        'PORT': '5432',       # Set to the PostgreSQL server port
     }
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
 
 
 
@@ -164,6 +169,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field

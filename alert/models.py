@@ -3,6 +3,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser,PermissionsMixin
 from django.contrib.auth.base_user import  BaseUserManager
 from django.utils import timezone
+import re
 
 
 
@@ -35,14 +36,9 @@ class UserDataManager(BaseUserManager):
 
 class UserData(AbstractBaseUser,PermissionsMixin):
     # images_data = models.ManyToManyField("self", through="image")
-    email = models.EmailField(max_length=100, blank=True)
+    email = models.CharField(max_length=50,blank=True)
     username = models.CharField(max_length= 50, unique=True)
-    password = models.CharField(max_length=228)
-    confirm_password = models.CharField(max_length=228, blank=True)
-    phone_number = models.CharField(max_length=15,blank=True)
-    state = models.TextField(max_length= 20,blank=True)
-    city = models.TextField(max_length= 20,blank=True)
-    district = models.TextField(max_length= 20,blank=True)
+    password = models.CharField(max_length=50)
     is_superuser = models.BooleanField(default= True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=True)
@@ -59,17 +55,17 @@ class UserData(AbstractBaseUser,PermissionsMixin):
    
    
 def password_validate(clean_data):
-    try:
-        assert clean_data["password"] == clean_data["confirm_password"]
-       
-    except AssertionError:
-        print("password needs to be same")   
-      
+    
+    assert clean_data["password"] == clean_data["confirm_password"]
+def email_validate(email):
+    email_regrex = r"^[^\s@]+@[^\s@]+\.[^\s@]+$"
+    return re.match(email_regrex, email["email"]) is not None
 
 class ProfilePicture(models.Model):
     user = models.OneToOneField(UserData, on_delete=models.CASCADE, related_name="image_field")
     image  = models.FileField(upload_to="images", blank=True)
     avatar  = models.FileField(upload_to="avatars", blank=True)
+    bio = models.CharField(max_length=2000, blank=True)
 
     def __str__(self):
         return self.user.username
@@ -85,7 +81,7 @@ class Timeline(models.Model):
     
 class Reaction(models.Model):
 
-    user = models.ForeignKey(Timeline, on_delete=models.CASCADE, related_name="reations")
+    user = models.ForeignKey(Timeline, on_delete=models.CASCADE, related_name="reation")
     username = models.ForeignKey(UserData, on_delete=models.CASCADE)
     reaction = models.CharField(max_length=10)
 
