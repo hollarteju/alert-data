@@ -5,6 +5,7 @@ admin.site.register(UserData)
 admin.site.register(ProfilePicture)
 admin.site.register(Timeline)
 admin.site.register(Reaction)
+admin.site.register(Message)
 # admin.site.register(Timeline)
 
 # Register your models here.

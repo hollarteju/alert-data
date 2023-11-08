@@ -74,10 +74,18 @@ class Timeline(models.Model):
     user = models.ForeignKey(UserData, on_delete= models.CASCADE, related_name= "time_line")
     timeline_message = models.TextField(max_length=1000000, blank=True)
     timeline_media= models.FileField(upload_to="timeline", blank=True, null=True)
-    created_at = models.DateTimeField(default=timezone.now)
+    created_at = models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return str(self.id)
   
+class Message(models.Model):
+    timeline_instance = models.ManyToManyField(Timeline, related_name="timeline_messages")
+    Messages = models.CharField(max_length=100000, blank=True)
+    user = models.CharField(max_length=1000)
+    created_at = models.DateTimeField(auto_now_add=True)
+    timeline_id = models.IntegerField()
+    def __str__(self):
+        return str(self.timeline_id )
     
 class Reaction(models.Model):
 

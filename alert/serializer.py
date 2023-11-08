@@ -32,6 +32,12 @@ class TimeLineSerializer(serializers.Serializer):
         model=Timeline
         fields = "__all__"
 
+class MessageSerializer(serializers.Serializer):
+    class Meta:
+        model=Message
+        fields = "__all__"
+
+
 class ReactionSerializer(serializers.Serializer):
     class Meta:
         model=Reaction

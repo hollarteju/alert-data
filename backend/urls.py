@@ -29,14 +29,20 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from alert.views import *
 
 
+
 urlpatterns = [
     path('admin/', admin.site.urls),
+    
 
     path("register", register_user ),
     path("profile_image_response", profile_image_response),
     path("timeline_update", timeline_update),
     path("timeline_res", timeline_response),
     path("save_images", image_view),
+    path("timeline_messages", timeline_message),
+    path("timeline_message_response", timeline_message_response),
+    path("reaction_update", reaction_update),
+    path("user_reaction", user_reaction),
     # simple jwt token url
     path('token', MyToken.as_view(), name='token_obtain_pair'),  # Generate token
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),  # Refresh token

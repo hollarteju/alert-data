@@ -11,7 +11,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.generics import ListCreateAPIView
-from django.db.models import Count
+from django.db.models import Count, OuterRef,Subquery
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authtoken.models import Token
 # from urllib.parse import unquote
@@ -116,21 +116,30 @@ def timeline_update(request):
             return Response(status=status.HTTP_400_BAD_REQUEST)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(["POST"])
-def timeline_response(request):
-    
+def timeline_logic():
         # user_pics = ProfilePicture.objects.get(user="olateju")
+    num = Timeline.objects.count()
+  
     react_value = Timeline.objects.order_by("-created_at").annotate(reaction = Count("reation__reaction", filter=models.Q(reation__reaction= "witness")),
                                    like = Count("reation__reaction", filter=models.Q(reation__reaction= "like")),
-                                    dislike = Count("reation__reaction", filter=models.Q(reation__reaction= "dislike")),)
+                                    dislike = Count("reation__reaction", filter=models.Q(reation__reaction= "dislike")),
+                                    user_reaction = Subquery(Reaction.objects.filter(user =OuterRef("pk")).values("reaction")),
+                                    
+                        
+                                    )
     
    
-    lists = []  
+    lists = []
     for i in react_value:
-     
+        
+        var = Timeline.objects.get(id = num)
+        react = Reaction.objects.filter(user = var)
+        reacter = [f"{i.username.username}-{i.reaction}"for i in react]
+       
+        num -=1
         try:
             pf_image = ProfilePicture.objects.get(user = i.user.id)
-            a =  {   
+            data =  {   
                 "user":i.user.username,
                 "message":i.timeline_message,
                 "media":i.timeline_media.name,
@@ -138,23 +147,85 @@ def timeline_response(request):
                 "profile_pic":pf_image.image.name,
                 "witness":i.reaction,
                 "like":i.like,
-                "dislike":i.dislike
+                "dislike":i.dislike,
+                "user_reaction":i.user_reaction,
+                "time":i.created_at,
+                "reacter":reacter
                 }
-            lists.append(a)
+            lists.append(data)
+        
         except ProfilePicture.DoesNotExist:
-             a =  {   
+             data =  {   
                 "user":i.user.username,
                 "message":i.timeline_message,
                 "media":i.timeline_media.name,
                 "user_id":i.id,
                 "witness":i.reaction,
                 "like":i.like,
-                "dislike":i.dislike
+                "dislike":i.dislike,
+                "user_reaction":i.user_reaction,
+                "reacter":reacter
                 }
-             lists.append(a)
-    return Response(lists)
+             lists.append(data)
+    
+    return lists
 
+@api_view(["POST"])
+def timeline_message(request):
+    data = request.data
+    serializer = MessageSerializer(data=data)
+    if serializer.is_valid():
+        timeline = Timeline.objects.get(id = data["id"])
+        message = Message.objects.create(Messages = data["message"], user = data["username"], timeline_id = data["id"])
+        message.timeline_instance.add(timeline)
+        return Response(status=status.HTTP_200_OK)
+    return Response(status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(["POST"])
+def timeline_message_response(request):
+    data = request.data
+    serilizer = MessageSerializer(data= data)
+    if serilizer.is_valid():
+        timeline = Timeline.objects.get(id = data["id"])
+        response = Message.objects.filter(timeline_instance = timeline)
+        users_msg = [{"message":i.Messages, "user":i.user, "timeline_id":i.timeline_id} for i in response]
+        
+        return Response(users_msg)
+        
+        
+    return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+@api_view(["POST"])
+def timeline_response(request):
+    result = timeline_logic()
+
+    return Response(result)
+
+
+@api_view(["POST"])
+def user_reaction(request):
+    users = Timeline.objects.annotate(name = models.F("reation__username__username"),
+                                      user_active = models.F("reation__reaction"))
+    list_values = [{"name":i.name, "user":i.user_active} for i in users]
+    return Response(list_values) 
+
+@api_view(["POST"])
+def reaction_update(request):
+    data = request.data
+    serializer = ReactionSerializer(data = request.data)
+    if serializer:
+        username = UserData.objects.get(username = data["username"])
+        try:
+            user = Reaction.objects.get(user =data["id"],username = username)
+            user.reaction = data["reaction"]
+            user.save()
+        except Reaction.DoesNotExist:
+            timeline = Timeline.objects.get(id = data["id"])
+            user = Reaction.objects.create(username =username,reaction = data["reaction"], user =timeline)
+            user.save()
+    
+    result = timeline_logic()
+
+    return Response(result)
 # username: hollarteju1
 # password hollarteju
-
-
