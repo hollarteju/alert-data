@@ -176,7 +176,12 @@ def timeline_message(request):
     serializer = MessageSerializer(data=data)
     if serializer.is_valid():
         timeline = Timeline.objects.get(id = data["id"])
-        message = Message.objects.create(Messages = data["message"], user = data["username"], timeline_id = data["id"])
+        message = Message.objects.create(
+                                        Messages = data["message"], 
+                                         user = data["username"], 
+                                         timeline_id = data["id"],
+                                         message_media = data["media"]
+                                         )
         message.timeline_instance.add(timeline)
         return Response(status=status.HTTP_200_OK)
     return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -189,8 +194,31 @@ def timeline_message_response(request):
         timeline = Timeline.objects.get(id = data["id"])
         response = Message.objects.filter(timeline_instance = timeline)
         users_msg = [{"message":i.Messages, "user":i.user, "timeline_id":i.timeline_id} for i in response]
+        empty_list =[]
+        for i in response:
+            try:
+                username = UserData.objects.get(username = i.user)
+                profile_pics = ProfilePicture.objects.get(user = username)
+                users_msg = {
+                            "message":i.Messages, 
+                            "user":i.user, 
+                            "timeline_id":i.timeline_id, 
+                            "profile_pics":profile_pics.image.name,
+                            "media": i.message_media.name
+                             }
+                empty_list.append(users_msg)
+              
+                
+            except :
+                users_msg = {
+                            "message":i.Messages, 
+                            "user":i.user, 
+                            "timeline_id":i.timeline_id,
+                            "media": i.message_media.name
+                            }
+            empty_list.append(users_msg)
         
-        return Response(users_msg)
+        return Response(empty_list) 
         
         
     return Response(status=status.HTTP_401_UNAUTHORIZED)
